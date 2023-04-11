@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import { formatDate } from "@fullcalendar/core";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -16,10 +16,24 @@ import {
 import Header from "../../components/Header";
 import { tokens } from "../../theme";
 
+const EVENTS_KEY = "calendar-events";
+
 const Calendar = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [currentEvents, setCurrentEvents] = useState([]);
+
+  useEffect(() => {
+    const eventsJson = localStorage.getItem(EVENTS_KEY);
+    if (eventsJson) {
+      const events = JSON.parse(eventsJson);
+      setCurrentEvents(events);
+    }
+  }, []);
+
+  const saveEventsToLocalStorage = (events) => {
+    localStorage.setItem(EVENTS_KEY, JSON.stringify(events));
+  };
 
   const handleDateClick = (selected) => {
     const title = prompt("Please enter a new title for your event");
@@ -27,13 +41,16 @@ const Calendar = () => {
     calendarApi.unselect();
 
     if (title) {
-      calendarApi.addEvent({
+      const newEvent = {
         id: `${selected.dateStr}-${title}`,
         title,
         start: selected.startStr,
         end: selected.endStr,
         allDay: selected.allDay,
-      });
+      };
+      const newEvents = [...currentEvents, newEvent];
+      setCurrentEvents(newEvents);
+      saveEventsToLocalStorage(newEvents);
     }
   };
 
@@ -44,7 +61,19 @@ const Calendar = () => {
       )
     ) {
       selected.event.remove();
+
+      // Remove the event from localStorage
+      const events = JSON.parse(localStorage.getItem("events")) || [];
+      const updatedEvents = events.filter(
+        (event) => event.id !== selected.event.id
+      );
+      localStorage.setItem("events", JSON.stringify(updatedEvents));
     }
+  };
+
+  const handleEventsSet = (events) => {
+    setCurrentEvents(events);
+    saveEventsToLocalStorage(events);
   };
 
   return (
@@ -114,12 +143,12 @@ const Calendar = () => {
               {
                 id: "12315",
                 title: "All-day event",
-                date: "2022-09-14",
+                date: "2023-05-05",
               },
               {
                 id: "5123",
                 title: "Timed event",
-                date: "2022-09-28",
+                date: "2023-05-05",
               },
             ]}
           />

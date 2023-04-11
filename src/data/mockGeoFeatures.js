@@ -11874,7 +11874,7 @@ export const geoFeatures = {
     {
       type: "Feature",
       properties: {
-        name: "Turkmenistan",
+        name: "Turkmenistan ,  Ashgabat , This is my country",
       },
       geometry: {
         type: "Polygon",
